@@ -46,5 +46,4 @@
   "Setup a recurring, notifying development build"
   []
   (comp (watch)
-        (notify :visual true)
         (test)))
