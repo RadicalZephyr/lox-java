@@ -27,6 +27,9 @@
 (defn printf-nested [format & args]
   (apply printf (str (indent-spaces) format) args))
 
+(defn type-names [types]
+  (keys types))
+
 (defn field-names [fields]
   (->> fields
        (drop 1)
@@ -38,6 +41,13 @@
        (partition 2)
        (map #(str (first %) " " (second %)))
        (str/join ", ")))
+
+(defn generate-visitor [base-name types]
+  (printf-nested "interface Visitor<R>")
+  (with-nested-brackets
+    (doseq [type types]
+      (printf-nested "R visit%1$s%2$s(%1$s %3$s);\n\n" type base-name (str/lower-case base-name)))))
+
 
 (defn generate-type [base-name type-name fields]
   (printf-nested "static class %s extends %s" type-name base-name)
@@ -51,7 +61,13 @@
     (printf-nested "%s(%s)" type-name (as-param-list fields))
     (with-nested-brackets
       (doseq [field-name (field-names fields)]
-        (printf-nested "this.%1$s = %1$s;\n" field-name)))))
+        (printf-nested "this.%1$s = %1$s;\n" field-name)))
+    (println-nested)
+
+    (println-nested "@Override")
+    (printf-nested "<R> R accept(Visitor<R> visitor)")
+    (with-nested-brackets
+      (printf-nested "return visitor.visit%s%s(this);\n" type-name base-name))))
 
 
 (defn generate-ast [output-dir base-name types]
@@ -65,6 +81,16 @@
        (println)
        (printf "abstract class %s" base-name)
        (with-nested-brackets
+
+         ;; Visitor interface.
+         (generate-visitor base-name (type-names types))
+         (println-nested)
+
+         ;; The base accept() method.
+         (println-nested "abstract <R> R accept(Visitor<R> visitor);")
+         (println-nested)
+
+         ;; Nested expr subclass definitions.
          (doseq [[type-name fields] types]
            (generate-type base-name type-name fields)
            (println-nested)))))))
