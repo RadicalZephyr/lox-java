@@ -55,3 +55,21 @@
   (comp (javac)
         (with-pass-thru _
           (eval '(radicalzephyr.lox.Lox/main (make-array String 0))))))
+
+(def lox-ast
+  {"Binary"    '["Expr" "left" "Token" "operator" "Expr" "right"]
+   "Grouping"  '["Expr" "expression"]
+   "Literal"   '["Object" "value"]
+   "Unary"     '["Token" "operator" "Expr" "right"]})
+
+(deftask gen-ast
+  "Generate the AST classes."
+  []
+  (with-pass-thru _
+    (require 'radicalzephyr.tool.generate-ast)
+    (if-let [gen-fn (resolve 'radicalzephyr.tool.generate-ast/generate-ast)]
+      (let [target-dir "src/radicalzephyr/lox/"
+            base-name "Expr"]
+        (gen-fn target-dir base-name lox-ast)
+        (boot.util/info "Successfully wrote AST data structures into %s%s.java\n" target-dir base-name))
+      (boot.util/fail "Could not find generate-ast function."))))
