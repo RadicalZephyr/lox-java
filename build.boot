@@ -1,4 +1,5 @@
 (set-env!
+ :resource-paths #{"resources"}
  :source-paths #{"src"}
  :dependencies '[[radicalzephyr/boot-junit "0.4.0"  :scope "test"]
                  [junit                    "4.12"   :scope "test"]])
