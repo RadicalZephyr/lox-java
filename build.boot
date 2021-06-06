@@ -47,3 +47,10 @@
   []
   (comp (watch)
         (test)))
+
+(deftask run
+  "Run the Lox interpreter."
+  []
+  (comp (javac)
+        (with-pass-thru _
+          (eval '(radicalzephyr.lox.Lox/main (make-array String 0))))))
