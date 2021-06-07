@@ -47,6 +47,7 @@
   "Setup a recurring, notifying development build"
   []
   (comp (watch)
+        (notify :audible true)
         (test)))
 
 (deftask run
@@ -57,10 +58,10 @@
           (eval '(radicalzephyr.lox.Lox/main (make-array String 0))))))
 
 (def lox-ast
-  {"Binary"    '["Expr" "left" "Token" "operator" "Expr" "right"]
-   "Grouping"  '["Expr" "expression"]
-   "Literal"   '["Object" "value"]
-   "Unary"     '["Token" "operator" "Expr" "right"]})
+  {"Binary"    ["Expr" "left" "Token" "operator" "Expr" "right"]
+   "Grouping"  ["Expr" "expression"]
+   "Literal"   ["Object" "value"]
+   "Unary"     ["Token" "operator" "Expr" "right"]})
 
 (deftask gen-ast
   "Generate the AST classes."
