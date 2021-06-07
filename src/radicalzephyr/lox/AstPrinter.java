@@ -1,8 +1,24 @@
 package radicalzephyr.lox;
 
-public class AstPrinter implements Expr.Visitor<String> {
+public class AstPrinter implements
+                        Expr.Visitor<String>,
+                        Stmt.Visitor<String> {
+    String print(Stmt stmt) {
+        return stmt.accept(this);
+    }
+
     String print(Expr expr) {
         return expr.accept(this);
+    }
+
+    @Override
+    public String visitExpressionStmt(Stmt.Expression stmt) {
+        return parenthesize("stmt", stmt.expression);
+    }
+
+    @Override
+    public String visitPrintStmt(Stmt.Print stmt) {
+        return parenthesize("print", stmt.expression);
     }
 
     @Override

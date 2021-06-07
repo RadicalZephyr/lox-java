@@ -52,26 +52,33 @@
 
 (deftask run
   "Run the Lox interpreter."
-  []
+  [a args ARG [str] "the arguments for the application."]
   (comp (javac)
         (with-pass-thru _
-          (eval '(radicalzephyr.lox.Lox/main (make-array String 0))))))
+          (eval `(radicalzephyr.lox.Lox/main (into-array String ~args))))))
 
-(def lox-ast
+(def lox-expression-ast
   {"Binary"    ["Expr" "left" "Token" "operator" "Expr" "right"]
    "Grouping"  ["Expr" "expression"]
    "Literal"   ["Object" "value"]
    "Unary"     ["Token" "operator" "Expr" "right"]
    "Ternary"   ["Token" "operator" "Expr" "test" "Expr" "then" "Expr" "else_"]})
 
+(def lox-statement-ast
+  {"Expression" ["Expr" "expression"]
+   "Print"      ["Expr" "expression"]})
+
+(defn write-ast [target-dir base-name ast-types]
+  (if-let [gen-fn (resolve 'radicalzephyr.tool.generate-ast/generate-ast)]
+    (do
+      (gen-fn target-dir base-name ast-types)
+      (boot.util/info "Successfully wrote AST data structures into %s%s.java\n" target-dir base-name))
+    (boot.util/fail "Could not find generate-ast function.")))
+
 (deftask gen-ast
   "Generate the AST classes."
   []
   (with-pass-thru _
     (require 'radicalzephyr.tool.generate-ast)
-    (if-let [gen-fn (resolve 'radicalzephyr.tool.generate-ast/generate-ast)]
-      (let [target-dir "src/radicalzephyr/lox/"
-            base-name "Expr"]
-        (gen-fn target-dir base-name lox-ast)
-        (boot.util/info "Successfully wrote AST data structures into %s%s.java\n" target-dir base-name))
-      (boot.util/fail "Could not find generate-ast function."))))
+    (write-ast "src/radicalzephyr/lox/" "Expr" lox-expression-ast)
+    (write-ast "src/radicalzephyr/lox/" "Stmt" lox-statement-ast)))
